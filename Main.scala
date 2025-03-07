@@ -69,4 +69,39 @@ class Practicas {
       resto + (clave -> (head :: resto.getOrElse(clave, Nil)))
       // Añado (o machaco) en el mapa acual la clave del head actual preponiendole el head actual a la lista cuya clave sea la del head.
   }
+
+  def reduce[A](l: List[A], f: (A,A)=>A): A = l match {
+    case Nil => throw new IllegalArgumentException("La lista no puede estar vacía")
+    case head :: Nil => head
+    case head :: tail => f(head, reduce(tail, f))
+  }
+
+  def subsets[A](s: Set[A]): Set[Set[A]] = {
+    def bucle(l: List[A], currentSet: Set[Set[A]]): Set[Set[A]] = l match {
+      case Nil => currentSet
+      case head :: tail =>
+        val nuevosSubconjuntos = currentSet.map(conjunto => conjunto + head)
+        bucle(tail, currentSet ++ nuevosSubconjuntos)
+
+    }
+    bucle(s.toList, Set(Set.empty[A]))
+    // Ejemplo con subsets(Set(1,2,3))
+    /*
+    Subconjuntos actuales:              Set(Set())
+    Subconjuntos nuevos al añadir 1:    Set(Set(1))
+
+    Subconjuntos actuales después:      Set(Set(), Set(1))
+    --
+    Subconjuntos actuales:              Set(Set(), Set(1))
+    Subconjuntos nuevos al añadir 2:    Set(Set(2), Set(1, 2))
+
+    Subconjuntos actuales después:      Set (Set(), Set(1), Set(2), Set(1, 2))
+    --
+    Subconjuntos actuales:              Set (Set(), Set(1), Set(2), Set(1, 2))
+    Subconjuntos nuevos al añadir 3:    Set(Set(3), Set(1, 3), Set(2, 3), Set(1, 2, 3))
+    --
+    Resultado final:                    Set(Set(), Set(1), Set(2), Set(1, 2), Set(3), Set(1, 3), Set(2, 3), Set(1, 2, 3))
+     */
+
+  }
 }

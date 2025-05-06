@@ -8,26 +8,42 @@ object gestorAgua {
   // CS-Hid2: Un hidrógeno debe esperar a los otros dos átomos para formar la molécula
   // CS-Ox1: El oxígeno que quiere formar una molécula espera si ya hay un oxígeno
   // CS-Ox2: El oxígeno debe esperar a los otros dos átomos para formar la molécula
-
+  private var numHidrogenos = 0
+  private var numOxigenos = 0
+  private val hayOxigeno = new Semaphore(1)
+  private val hayHidrogeno = new Semaphore(1)
+  private val mutex = new Semaphore(1)
 
   def oxigeno(id: Int) = {
-    // el oxígeno id quiere formar una molécula
-    // ...
+    hayOxigeno.acquire()                              // Hasta que termine de generarse, no se generan más
+    mutex.acquire()
+    numOxigenos = 1
     log(s"Oxígeno $id quiere formar una molécula")
-    // ...
-    // log(s"      Molécula formada!!!")
-    // ...
-    // log(s"Sale oxígeno $id: numO: $numO---molecula=${molecula.availablePermits()}")
-    // ...
+    if (numHidrogenos == 2) {                         // Si ya hay suficientes hidrogenos, creo la molécula
+      hayOxigeno.release()                            // Restauro todo 
+      hayHidrogeno.release()
+      numHidrogenos = 0
+      numOxigenos = 0
+      log(s"      Molécula formada!!!")
+    }
+    mutex.release()
   }
 
   def hidrogeno(id: Int) = {
-    // el hidrógeno id quiere formar una molécula
-    // ...
+    hayHidrogeno.acquire()
+    mutex.acquire()
+    numHidrogenos += 1
+    if (numHidrogenos == 1) hayHidrogeno.release()
     log(s"Hidrógeno $id quiere formar una molécula")
-    // ...
-    // log(s"      Molécula formada!!!")
-    // ...
+    if (numHidrogenos == 2 && numOxigenos == 1) {     // Si puedo crear la molécula, la creo
+      hayOxigeno.release()                            // Restauro todo 
+      hayHidrogeno.release()
+      numHidrogenos = 0
+      numOxigenos = 0
+      log(s"      Molécula formada!!!")
+    }
+
+    mutex.release()
   }
 }
 object Ejercicio5 {

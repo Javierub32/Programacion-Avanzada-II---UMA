@@ -7,24 +7,34 @@ class Olla(R: Int) {
   // CS-caníbal i: no coge una ración de la olla si está vacía
   // CS-cocinero: no cocina un nuevo explorador hasta que la olla está vacía
   private var olla = R // inicialmente llena
+  private val mutex = new Semaphore(1)
+  private val hayComida = new Semaphore(1)
+  private val vacia = new Semaphore(0)
   // ...
 
   def racion(i: Int) = {
-    // caníbal i coge una ración de la olla
-    // ...
+    hayComida.acquire()
+    mutex.acquire()
+    olla -= 1
     log(s"Caníbal $i coge una ración de la olla. Quedan $olla raciones.")
-    // ...
+    if (olla == 0) {
+      vacia.release()
+    } else {
+      hayComida.release()
+    }
+    mutex.release()
   }
 
   def dormir = {
-    // cocinero espera a que la olla esté vacía
-    // ...
   }
 
   def llenarOlla = {
-    // ...
+    vacia.acquire()
+    mutex.acquire()
+    olla = 5
+    hayComida.release()
     log(s"El cocinero llena la olla. Quedan $olla raciones.")
-    // ...
+    mutex.release()
   }
 }
 

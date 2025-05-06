@@ -7,29 +7,26 @@ object mesa {
   // CS-fumador i: No puede fumar hasta que estén en la mesa los ingredientes que le faltan
   // CS-Agente: No pone un nuevo ingrediente hasta que el fumador no ha terminado de fumar
 
-  private var ingr = -1 // el ingrediente que no está-- -1=mesa vacía, 0=no tabaco, 1=no papel, 2=no cerillas
-  // ...
+  private val mesaVacia = new Semaphore(1)
+  // un semáforo por fumador i (0 = tabaco, 1 = papel, 2 = cerillas)
+  private val puedeFumar = Array.fill(3)(new Semaphore(0))
 
-  def quieroFumar(i: Int) = {
-    // el fumador i quiere fumar
-    // ...
-    log(s"Fumador $i fuma")
-    // ...
+  def quieroFumar(i: Int): Unit = {
+    puedeFumar(i).acquire()
+    println(s"Fumador $i empieza a fumar")
   }
 
-  def finFumar(i: Int) = {
-    // el fumador i termina de fumar
-    // ...
-    log(s"Fumador $i termina de fumar")
-    // ...
+  def finFumar(i: Int): Unit = {
+    println(s"Fumador $i termina de fumar")
+    mesaVacia.release()
   }
 
-  def nuevosIngr(ingr: Int) = {
-    // el agente pone nuevos ingredientes (ingr es el ingrediente que no pone)
-    // ...
-    log(s"El agente no pone ingrediente $ingr")
-    // ...
+  def nuevosIngr(ingr: Int): Unit = {
+    mesaVacia.acquire()
+    println(s"El agente no pone ingrediente $ingr")
+    puedeFumar(ingr).release()
   }
+
 }
 
 object Ejercicio6 {

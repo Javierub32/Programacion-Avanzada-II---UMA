@@ -8,20 +8,29 @@ class Nido(B: Int) {
   // CS-papá/mamá: no puede dejar un bichito en el plato si está lleno
 
   private var plato = 0
+  private val mutex = new Semaphore(1)
+  private val lleno = new Semaphore(1)
+  private val hayBichos = new Semaphore(0)
   // ...
 
   def cojoBichito(i: Int) = {
-    // el bebé i coge un bichito del plato
-    // ...
+    hayBichos.acquire()
+    mutex.acquire()
+    if (plato == B) lleno.release()
+    plato -= 1
+    if (plato > 0) hayBichos.release()
     log(s"Bebé $i coge un bichito. Quedan $plato bichitos")
-    // ...
+    mutex.release()
   }
 
   def pongoBichito(i: Int) = {
-    // el papá/la mamá pone un bichito en el plato (0=papá, 1=mamá)
-    // ...
+    lleno.acquire()
+    mutex.acquire()
+    if (plato == 0) hayBichos.release()
+    plato += 1
+    if (plato != B) lleno.release()
     log(s"Papá $i pone un bichito. Quedan $plato bichitos")
-    // ...
+    mutex.release()
   }
 }
 
